@@ -34,6 +34,13 @@ struct ContentView: View {
                 .font(.headline)
                 .multilineTextAlignment(.center)
                 .padding()
+            
+            if let bpm = bleManager.heartRate {
+                Text("\(bpm) BPM")
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .transition(.opacity)
+            }
 
             Spacer()
         }

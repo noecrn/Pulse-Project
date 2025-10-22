@@ -1,8 +1,8 @@
-# ⚡️ Pulse Project
+# Pulse Project
 
 This document outlines the high-level architecture, data flow, and key components of the Pulse project. It serves as a central reference for how the hardware, firmware, and software interact.
 
-## 🏛️ System Architecture
+## System Architecture
 
 The system follows a **data streaming architecture**. A low-power wearable device is responsible for raw data acquisition, while a companion iOS application handles all the intensive computation and user-facing logic.
 
@@ -25,11 +25,7 @@ The end-to-end process for detecting sleep is as follows:
 
 ---
 
-## 🧩 Component Breakdown
-
-### 1. Wearable Device
-* **Hardware**: Custom PCB designed with a microcontroller, accelerometer, and heart rate sensor. **Status: Design complete, awaiting fabrication and assembly.**
-* **Firmware**: The embedded software responsible for initializing sensors, managing power, and handling BLE communication. It does **not** perform any feature calculation.
+## Component Breakdown
 
 ### 1. Wearable Device Hardware
 
@@ -43,16 +39,29 @@ The wearable device is a custom-designed Printed Circuit Board (PCB) engineered 
     * **Heart Rate Sensor**: The board integrates a dedicated heart rate sensor IC (**U3**) to capture cardiovascular data.
     * **Power Management**: The power subsystem is managed by dedicated ICs (**U4**, **U5**) that regulate voltage and handle battery charging via a **USB-C connector (U7)**. This ensures stable power delivery to all components.
 
+    ![SCH_Schematic](https://i.imgur.com/c2dHO15.png$0)
+
 * **Connectivity**:
     * **Primary (Data)**: Bluetooth Low Energy (BLE) for streaming sensor data to the companion iOS application.
     * **Secondary (Service)**: 
       * A USB-C port provides the physical interface for battery charging and initial firmware programming.
       * A 3-pin header (H1) is also included on the board, exposing GND, TX, and RX pins for low-level hardware debugging.
 
+    ![3D_render_PCB](https://i.imgur.com/XnQge40.png$0)
+
 * **PCB Layout & Component Placement Strategy**: The PCB utilizes a two-sided component placement strategy to optimize for size, sensor performance, and signal integrity.
 
-    * **Top Side**: As shown in the 2D render, this side houses the main digital and power components. This includes the ESP32 MCU (U1), the accelerometer (U8), power management ICs (U4, U5), and the USB-C connector (U7). Placing these components together contains digital noise and simplifies the routing of power and high-speed signals.
-    * **Bottom (Skin-Facing) Side**: This side is dedicated to sensors that require direct proximity or contact with the user's skin. It contains the heart rate sensor (U3) and the sensor U9. This physical separation isolates the sensitive analog sensors from the noisy digital logic on the top side, ensuring cleaner and more reliable data acquisition.
+    * **Top Side**: As shown in the 2D render, this side houses the main digital and power components. This includes the ESP32 MCU (**U1**), the accelerometer (**U8**), power management ICs (**U4, U5**), and the USB-C connector (**U7**). Placing these components together contains digital noise and simplifies the routing of power and high-speed signals.
+
+    <p align="center">
+        <img src="https://i.imgur.com/bLLGVY8.png$0" alt="2D_render" width="500"/>
+    </p>
+
+    * **Bottom (Skin-Facing) Side**: This side is dedicated to sensors that require direct proximity or contact with the user's skin. It contains the heart rate sensor (**U3**) and the sensor **U9**. This physical separation isolates the sensitive analog sensors from the noisy digital logic on the top side, ensuring cleaner and more reliable data acquisition.
+
+    <p align="center">
+        <img src="https://i.imgur.com/wSPXkMZ.png$0" alt="2D_render" width="500"/>
+    </p>
 
 * **Status**: Design complete, awaiting fabrication and assembly.
 
@@ -66,7 +75,7 @@ The wearable device is a custom-designed Printed Circuit Board (PCB) engineered 
 
 ---
 
-## 💤 Sleep Detection Algorithm
+## Sleep Detection Algorithm
 
 The core of the sleep detection logic is a supervised machine learning model. It was trained to recognize the subtle patterns in physiological data that distinguish sleep from wakefulness. The model does not make decisions on raw sensor data directly; instead, it uses a set of carefully crafted features that summarize the user's state over time.
 
@@ -81,6 +90,18 @@ The model's performance relies on **feature engineering**, where raw data is tra
 
 After comparing several algorithms (including Logistic Regression and Random Forest), a **Tuned XGBoost (Extreme Gradient Boosting) Classifier** was selected as the final model.
 
+```
+              precision    recall  f1-score   support
+
+   False           0.99      0.93      0.96      4893
+    True           0.76      0.95      0.85      1182
+
+accuracy                               0.93      6075
+
+macro avg          0.87      0.94      0.90      6075
+weighted avg       0.94      0.93      0.94      6075
+```
+
 * **Why XGBoost?** XGBoost is a powerful and efficient tree-based algorithm known for its high performance in classification tasks. It builds a series of decision trees, where each new tree corrects the errors of the previous one, resulting in a highly accurate predictive model.
 * **Tuning**: The model's hyperparameters were optimized using `RandomizedSearchCV` to find the best settings for this specific problem, maximizing its F1-score.
 
@@ -91,7 +112,7 @@ After comparing several algorithms (including Logistic Regression and Random For
 
 ---
 
-## ❗ Key Decisions & Open Questions
+## Key Decisions & Open Questions
 
 * **BLE Data Protocol (Undecided)**: The exact format for transmitting data from the wearable to the app has not been finalized. The goal is to choose a simple and efficient format.
     * **Option A (CSV String)**: Simple to parse (e.g., `"72.5,1.05,0"`). Human-readable for debugging.

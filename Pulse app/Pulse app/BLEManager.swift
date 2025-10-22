@@ -24,6 +24,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // @Published permet à SwiftUI de réagir automatiquement aux changements de ces variables.
     @Published var connectionStatus: String = "Déconnecté"
     @Published var isConnected: Bool = false
+    @Published var heartRate: Int? = nil
+    
     
     let heartRateCharacteristicUUID = CBUUID(string: "2A37")
     
@@ -128,12 +130,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             let hrValue = parseHeartRate(from: data)
             print(">>> Fréquence Cardiaque (Garmin): \(hrValue) BPM")
 
-            // --- ENVOI AU DATAPROCESSOR ---
-            // Notre DataProcessor attend 4 valeurs (HR, X, Y, Z).
-            // La Garmin n'envoie pas l'accéléromètre de cette façon.
-            // Pour ce TEST, nous allons envoyer des fausses données (0) pour l'accéléromètre
-            // afin de prouver que notre pipeline de données fonctionne.
             DispatchQueue.main.async {
+                self.heartRate = hrValue
                 self.dataProcessor?.add(heartRate: Double(hrValue), accelX: 0.0, accelY: 0.0, accelZ: 0.0)
             }
             

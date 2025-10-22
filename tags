@@ -8,8 +8,15 @@
 !_TAG_FIELD_DESCRIPTION	name	/tag name/
 !_TAG_FIELD_DESCRIPTION	pattern	/pattern/
 !_TAG_FIELD_DESCRIPTION	typeref	/Type and name of a variable or typedef/
+!_TAG_FIELD_DESCRIPTION!XML	uri	/uri associated with name prefix/
 !_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_KIND_DESCRIPTION!JSON	a,array	/arrays/
+!_TAG_KIND_DESCRIPTION!JSON	b,boolean	/booleans/
+!_TAG_KIND_DESCRIPTION!JSON	n,number	/numbers/
+!_TAG_KIND_DESCRIPTION!JSON	o,object	/objects/
+!_TAG_KIND_DESCRIPTION!JSON	s,string	/strings/
+!_TAG_KIND_DESCRIPTION!JSON	z,null	/nulls/
 !_TAG_KIND_DESCRIPTION!Markdown	S,subsection	/level 2 sections/
 !_TAG_KIND_DESCRIPTION!Markdown	T,l4subsection	/level 4 sections/
 !_TAG_KIND_DESCRIPTION!Markdown	c,chapter	/chapters/
@@ -18,26 +25,68 @@
 !_TAG_KIND_DESCRIPTION!Markdown	s,section	/sections/
 !_TAG_KIND_DESCRIPTION!Markdown	t,subsubsection	/level 3 sections/
 !_TAG_KIND_DESCRIPTION!Markdown	u,l5subsection	/level 5 sections/
+!_TAG_KIND_DESCRIPTION!PlistXML	k,key	/keys/
+!_TAG_KIND_DESCRIPTION!XML	i,id	/id attributes/
+!_TAG_KIND_DESCRIPTION!XML	n,nsprefix	/namespace prefixes/
+!_TAG_KIND_DESCRIPTION!XML	r,root	/root elements/
 !_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
 !_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
 !_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
 !_TAG_OUTPUT_VERSION	1.1	/current.age/
+!_TAG_PARSER_VERSION!JSON	0.0	/current.age/
 !_TAG_PARSER_VERSION!Markdown	1.1	/current.age/
+!_TAG_PARSER_VERSION!PlistXML	0.0	/current.age/
+!_TAG_PARSER_VERSION!XML	0.0	/current.age/
 !_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
 !_TAG_PROC_CWD	/Users/noecrn/Documents/Pulse-Project/	//
 !_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	6.2.0	//
-1. Key Features	CONTEXT.md	/^### 1. Key Features$/;"	S	section:⚡️ Pulse Project""💤 Sleep Detection Algorithm
-1. Wearable Device	CONTEXT.md	/^### 1. Wearable Device$/;"	S	section:⚡️ Pulse Project""🧩 Component Breakdown
-1. Wearable Device Hardware	CONTEXT.md	/^### 1. Wearable Device Hardware$/;"	S	section:⚡️ Pulse Project""🧩 Component Breakdown
-2. The Model: Tuned XGBoost	CONTEXT.md	/^### 2. The Model: Tuned XGBoost$/;"	S	section:⚡️ Pulse Project""💤 Sleep Detection Algorithm
-2. iOS Companion App	CONTEXT.md	/^### 2. iOS Companion App$/;"	S	section:⚡️ Pulse Project""🧩 Component Breakdown
-3. Training & Output	CONTEXT.md	/^### 3. Training & Output$/;"	S	section:⚡️ Pulse Project""💤 Sleep Detection Algorithm
-Workflow & Data Flow	CONTEXT.md	/^## Workflow & Data Flow$/;"	s	chapter:⚡️ Pulse Project
-⚡️ Pulse Project	CONTEXT.md	/^# ⚡️ Pulse Project$/;"	c
-❗ Key Decisions & Open Questions	CONTEXT.md	/^## ❗ Key Decisions & Open Questions$/;"	s	chapter:⚡️ Pulse Project
-🏛️ System Architecture	CONTEXT.md	/^## 🏛️ System Architecture$/;"	s	chapter:⚡️ Pulse Project
-💤 Sleep Detection Algorithm	CONTEXT.md	/^## 💤 Sleep Detection Algorithm$/;"	s	chapter:⚡️ Pulse Project
-🧩 Component Breakdown	CONTEXT.md	/^## 🧩 Component Breakdown$/;"	s	chapter:⚡️ Pulse Project
+0	Pulse app/Pulse app/Assets.xcassets/AccentColor.colorset/Contents.json	/^    {$/;"	o	array:colors
+0	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^        {$/;"	o	array:images.1.appearances
+0	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^        {$/;"	o	array:images.2.appearances
+0	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^    {$/;"	o	array:images
+1	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^    {$/;"	o	array:images
+1. Key Features	CONTEXT.md	/^### 1. Key Features$/;"	S	section:Pulse Project""Sleep Detection Algorithm
+1. Wearable Device Hardware	CONTEXT.md	/^### 1. Wearable Device Hardware$/;"	S	section:Pulse Project""Component Breakdown
+2	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^    {$/;"	o	array:images
+2. The Model: Tuned XGBoost	CONTEXT.md	/^### 2. The Model: Tuned XGBoost$/;"	S	section:Pulse Project""Sleep Detection Algorithm
+2. iOS Companion App	CONTEXT.md	/^### 2. iOS Companion App$/;"	S	section:Pulse Project""Component Breakdown
+3. Training & Output	CONTEXT.md	/^### 3. Training & Output$/;"	S	section:Pulse Project""Sleep Detection Algorithm
+Component Breakdown	CONTEXT.md	/^## Component Breakdown$/;"	s	chapter:Pulse Project
+Key Decisions & Open Questions	CONTEXT.md	/^## Key Decisions & Open Questions$/;"	s	chapter:Pulse Project
+Pulse Project	CONTEXT.md	/^# Pulse Project$/;"	c
+Pulse app.xcscheme_^#shared#^_	Pulse app/Pulse app.xcodeproj/xcuserdata/noecrn.xcuserdatad/xcschemes/xcschememanagement.plist	/^		<key>Pulse app.xcscheme_^#shared#^_<\/key>$/;"	k	key:SchemeUserState
+SchemeUserState	Pulse app/Pulse app.xcodeproj/xcuserdata/noecrn.xcuserdatad/xcschemes/xcschememanagement.plist	/^	<key>SchemeUserState<\/key>$/;"	k
+Sleep Detection Algorithm	CONTEXT.md	/^## Sleep Detection Algorithm$/;"	s	chapter:Pulse Project
+System Architecture	CONTEXT.md	/^## System Architecture$/;"	s	chapter:Pulse Project
+Workflow & Data Flow	CONTEXT.md	/^## Workflow & Data Flow$/;"	s	chapter:Pulse Project
+appearance	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^          "appearance" : "luminosity",$/;"	s	object:images.1.appearances.0
+appearance	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^          "appearance" : "luminosity",$/;"	s	object:images.2.appearances.0
+appearances	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "appearances" : [$/;"	a	object:images.1
+appearances	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "appearances" : [$/;"	a	object:images.2
+author	Pulse app/Pulse app/Assets.xcassets/AccentColor.colorset/Contents.json	/^    "author" : "xcode",$/;"	s	object:info
+author	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^    "author" : "xcode",$/;"	s	object:info
+author	Pulse app/Pulse app/Assets.xcassets/Contents.json	/^    "author" : "xcode",$/;"	s	object:info
+colors	Pulse app/Pulse app/Assets.xcassets/AccentColor.colorset/Contents.json	/^  "colors" : [$/;"	a
+idiom	Pulse app/Pulse app/Assets.xcassets/AccentColor.colorset/Contents.json	/^      "idiom" : "universal"$/;"	s	object:colors.0
+idiom	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "idiom" : "universal",$/;"	s	object:images.0
+idiom	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "idiom" : "universal",$/;"	s	object:images.1
+idiom	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "idiom" : "universal",$/;"	s	object:images.2
+images	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^  "images" : [$/;"	a
+info	Pulse app/Pulse app/Assets.xcassets/AccentColor.colorset/Contents.json	/^  "info" : {$/;"	o
+info	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^  "info" : {$/;"	o
+info	Pulse app/Pulse app/Assets.xcassets/Contents.json	/^  "info" : {$/;"	o
+orderHint	Pulse app/Pulse app.xcodeproj/xcuserdata/noecrn.xcuserdatad/xcschemes/xcschememanagement.plist	/^			<key>orderHint<\/key>$/;"	k	key:SchemeUserState.Pulse app.xcscheme_^#shared#^_
+platform	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "platform" : "ios",$/;"	s	object:images.0
+platform	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "platform" : "ios",$/;"	s	object:images.1
+platform	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "platform" : "ios",$/;"	s	object:images.2
+size	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "size" : "1024x1024"$/;"	s	object:images.0
+size	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "size" : "1024x1024"$/;"	s	object:images.1
+size	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^      "size" : "1024x1024"$/;"	s	object:images.2
+value	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^          "value" : "dark"$/;"	s	object:images.1.appearances.0
+value	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^          "value" : "tinted"$/;"	s	object:images.2.appearances.0
+version	Pulse app/Pulse app/Assets.xcassets/AccentColor.colorset/Contents.json	/^    "version" : 1$/;"	n	object:info
+version	Pulse app/Pulse app/Assets.xcassets/AppIcon.appiconset/Contents.json	/^    "version" : 1$/;"	n	object:info
+version	Pulse app/Pulse app/Assets.xcassets/Contents.json	/^    "version" : 1$/;"	n	object:info
