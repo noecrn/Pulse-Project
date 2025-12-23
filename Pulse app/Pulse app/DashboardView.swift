@@ -27,100 +27,48 @@ struct DashboardView: View {
                 )
                 .ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 25) {
-                        
-                        // 2. HERO STATUS (Dynamic Glow)
-                        StatusHeader(isSleeping: isSleeping)
-                            .padding(.top, 20)
-
-                        // 3. LIVE METRICS (Glass Cards)
-                        HStack(spacing: 15) {
-                            MetricCard(
-                                title: "Heart Rate",
-                                value: String(format: "%.0f", dataProcessor.currentHeartRate),
-                                unit: "BPM",
-                                icon: "heart.fill",
-                                color: .red
-                            )
+                // 2. MAIN CONTENT SWITCHER
+                if dataProcessor.isAnalyzing {
+                    // STATE A: LOADING
+                    LoadingView()
+                    
+                } else if isDataAvailable {
+                    // STATE B: DASHBOARD (Data Present)
+                    ScrollView {
+                        VStack(spacing: 25) {
                             
-                            MetricCard(
-                                title: "Movement",
-                                value: String(format: "%.1f", dataProcessor.currentVectorMagnitude),
-                                unit: "G",
-                                icon: "waveform.path.ecg",
-                                color: .blue
-                            )
-                        }
+                            // 1. LIVE HEART RATE (Only show if live data exists)
+                            if !dataProcessor.featureVector.isEmpty {
+                                MetricCard(
+                                    title: "Heart Rate",
+                                    value: String(format: "%.0f", dataProcessor.currentHeartRate),
+                                    unit: "BPM",
+                                    icon: "heart.fill",
+                                    color: .red
+                                )
+                                .padding(.top, 20)
+                            }
 
-                        // 4. SLEEP REPORT & CHART
-                        if let report = dataProcessor.lastSleepReport {
-                            VStack(spacing: 0) {
-                                // Header
-                                Text("Last Session Analysis")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding([.top, .leading, .trailing])
-                                
-                                // Chart
-                                ModernChart(data: dataProcessor.hrHistory)
-                                    .frame(height: 200)
-                                    .padding(.vertical)
-                                
-                                Divider().background(Color.white.opacity(0.1))
-                                
-                                // Stats Grid
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                                    StatItem(label: "Bedtime", value: report.bedTime, icon: "moon.zzz.fill", color: .indigo)
-                                    StatItem(label: "Wake Up", value: report.wakeTime, icon: "sun.max.fill", color: .orange)
-                                    StatItem(label: "Duration", value: report.sleepDuration, icon: "hourglass", color: .teal)
-                                    StatItem(label: "Efficiency", value: report.efficiency, icon: "percent", color: .green)
-                                }
-                                .padding()
+                            // 2. SLEEP REPORT & CHART (Only show if report exists)
+                            if let report = dataProcessor.lastSleepReport {
+                                SleepReportCard(report: report, data: dataProcessor.hrHistory)
+                                    .padding(.top, dataProcessor.featureVector.isEmpty ? 20 : 0)
                             }
-                            .background(.ultraThinMaterial) // Glass Effect
-                            .cornerRadius(20)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                            )
-                        } else if dataProcessor.isAnalyzing {
-                            // Loading State
-                            VStack(spacing: 15) {
-                                ProgressView()
-                                    .tint(.white)
-                                Text("Processing Night Data...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(40)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(20)
-                        }
-                        
-                        // 5. DEBUG (Subtle Footer)
-                        VStack(alignment: .leading) {
-                            Text("ML FEATURE VECTOR")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(.tertiary)
                             
-                            let vectorString = dataProcessor.featureVector.map { String(format: "%.1f", $0) }.joined(separator: ", ")
-                            Text(vectorString.isEmpty ? "Waiting for sensors..." : vectorString)
-                                .font(.system(size: 10, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
+                            // REMOVED: DebugFooter (ML Feature Vector is gone)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 20)
+                        .padding()
                     }
-                    .padding()
+                    
+                } else {
+                    // STATE C: EMPTY STATE (No Data)
+                    EmptyStateView()
                 }
             }
             .navigationTitle("Pulse Monitor")
             .toolbarColorScheme(.dark, for: .navigationBar)
         }
+        // Keep the prediction logic running in the background for live updates
         .onReceive(dataProcessor.$featureVector) { newFeatures in
             guard !newFeatures.isEmpty else { return }
             let result = predictor.predict(features: newFeatures)
@@ -129,47 +77,51 @@ struct DashboardView: View {
             }
         }
     }
+    
+    // Helper to check if we should show ANY content
+    private var isDataAvailable: Bool {
+        return !dataProcessor.featureVector.isEmpty || dataProcessor.lastSleepReport != nil
+    }
 }
 
-// MARK: - MODERN SUBVIEWS
+// MARK: - SUBVIEWS
 
-struct StatusHeader: View {
-    let isSleeping: Bool
-    
+struct EmptyStateView: View {
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 5) {
-                Text("CURRENT STATE")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-                
-                Text(isSleeping ? "Asleep" : "Awake")
-                    .font(.system(size: 42, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
-            }
+        VStack(spacing: 20) {
+            Image(systemName: "sensor.tag.radiowaves.forward")
+                .font(.system(size: 60))
+                .foregroundStyle(.white.opacity(0.3))
+                .padding(.bottom, 10)
             
-            Spacer()
+            Text("No Device Synced")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
             
-            // Animated Status Icon
-            ZStack {
-                Circle()
-                    .fill(isSleeping ? Color.indigo : Color.orange)
-                    .frame(width: 60, height: 60)
-                    .blur(radius: 20) // Glow effect
-                    .opacity(0.6)
-                
-                Image(systemName: isSleeping ? "moon.stars.fill" : "figure.run")
-                    .font(.system(size: 30))
-                    .foregroundStyle(.white)
-                    .symbolEffect(.bounce, value: isSleeping) // iOS 17 animation
-            }
+            Text("Try to sync the bracelet or import manually a CSV file")
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.white.opacity(0.6))
+                .padding(.horizontal, 40)
         }
-        .padding(25)
-        .background(
-            RoundedRectangle(cornerRadius: 25)
-                .fill(Color(white: 0.1))
-        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.ultraThinMaterial.opacity(0.3))
+    }
+}
+
+struct LoadingView: View {
+    var body: some View {
+        VStack(spacing: 15) {
+            ProgressView()
+                .tint(.white)
+                .scaleEffect(1.5)
+            Text("Processing Night Data...")
+                .font(.headline)
+                .foregroundStyle(.white.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.black.opacity(0.5))
     }
 }
 
@@ -181,72 +133,178 @@ struct MetricCard: View {
     let color: Color
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundStyle(color)
-                Spacer()
-            }
-            
-            VStack(alignment: .leading, spacing: 0) {
-                Text(value)
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .contentTransition(.numericText()) // Smooth number animation
+        HStack {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: icon)
+                        .foregroundStyle(color)
+                        .font(.title3)
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
                 
-                Text(unit)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    Text(value)
+                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .contentTransition(.numericText())
+                    
+                    Text(unit)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                }
             }
+            Spacer()
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(25)
+        .background(.ultraThinMaterial)
+        .cornerRadius(25)
+    }
+}
+
+struct SleepReportCard: View {
+    let report: SleepReport
+    let data: [ChartDataPoint]
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            Text("Last Session Analysis")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding([.top, .leading, .trailing])
+            
+            // Chart
+            ModernChart(data: data)
+                .frame(height: 200)
+                .padding(.vertical)
+            
+            Divider().background(Color.white.opacity(0.1))
+            
+            // Stats Grid
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                StatItem(label: "Bedtime", value: report.bedTime, icon: "moon.zzz.fill", color: .indigo)
+                StatItem(label: "Wake Up", value: report.wakeTime, icon: "sun.max.fill", color: .orange)
+                StatItem(label: "Duration", value: report.sleepDuration, icon: "hourglass", color: .teal)
+                StatItem(label: "Efficiency", value: report.efficiency, icon: "percent", color: .green)
+            }
+            .padding()
+        }
         .background(.ultraThinMaterial)
         .cornerRadius(20)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+        )
     }
 }
 
 struct ModernChart: View {
     let data: [ChartDataPoint]
     
+    @State private var selectedDate: Date?
+    @State private var selectedHR: Double?
+    
+    var minHR: Double { data.map { $0.value }.min() ?? 40 }
+    var maxHR: Double { data.map { $0.value }.max() ?? 140 }
+    
     var body: some View {
-        Chart(data) { point in
-            // 1. The Gradient Fill Area
-            AreaMark(
-                x: .value("Time", point.date),
-                y: .value("BPM", point.value)
-            )
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [Color.red.opacity(0.4), Color.clear],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .interpolationMethod(.catmullRom)
+        VStack(alignment: .leading) {
+            if let selectedHR, let selectedDate {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("\(Int(selectedHR)) BPM")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    Text("at " + selectedDate.formatted(date: .omitted, time: .shortened))
+                        .font(.caption)
+                        .foregroundStyle(.gray)
+                }
+                .transition(.opacity)
+            } else {
+                Text("Swipe to see details")
+                    .font(.caption)
+                    .foregroundStyle(.gray.opacity(0.5))
+            }
             
-            // 2. The Sharp Line on top
-            LineMark(
-                x: .value("Time", point.date),
-                y: .value("BPM", point.value)
-            )
-            .foregroundStyle(Color.red)
-            .interpolationMethod(.catmullRom)
-            .lineStyle(StrokeStyle(lineWidth: 2))
-        }
-        .chartYScale(domain: 40...140)
-        .chartXAxis {
-            AxisMarks(values: .stride(by: .hour, count: 2)) {
-                AxisValueLabel(format: .dateTime.hour(), centered: true)
-                    .foregroundStyle(Color.white.opacity(0.5))
+            Chart {
+                ForEach(data) { point in
+                    LineMark(
+                        x: .value("Time", point.date),
+                        y: .value("BPM", point.value)
+                    )
+                    .foregroundStyle(Color.red)
+                    .interpolationMethod(.catmullRom)
+                    .lineStyle(StrokeStyle(lineWidth: 3))
+                }
+                
+                if let selectedDate, let selectedHR {
+                    RuleMark(x: .value("Selected Time", selectedDate))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [5]))
+                        .annotation(position: .top) {
+                            VStack(spacing: 0) {
+                                Text("\(Int(selectedHR))")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.white)
+                                    .cornerRadius(8)
+                                Image(systemName: "arrowtriangle.down.fill")
+                                    .font(.system(size: 6))
+                                    .foregroundStyle(.white)
+                                    .offset(y: -1)
+                            }
+                        }
+                    
+                    PointMark(
+                        x: .value("Selected Time", selectedDate),
+                        y: .value("Value", selectedHR)
+                    )
+                    .foregroundStyle(.white)
+                    .symbolSize(50)
+                }
             }
-        }
-        .chartYAxis {
-            AxisMarks(position: .leading) {
-                AxisGridLine().foregroundStyle(Color.white.opacity(0.1))
-                AxisValueLabel().foregroundStyle(Color.white.opacity(0.5))
+            .chartYScale(domain: (minHR - 5)...(maxHR + 5))
+            .chartXAxis {
+                AxisMarks(values: .automatic(desiredCount: 5)) {
+                    AxisValueLabel(format: .dateTime.hour().minute(), centered: true)
+                        .foregroundStyle(Color.white.opacity(0.5))
+                }
             }
+            .chartYAxis {
+                AxisMarks(position: .leading) {
+                    AxisGridLine().foregroundStyle(Color.white.opacity(0.1))
+                    AxisValueLabel().foregroundStyle(Color.white.opacity(0.5))
+                }
+            }
+            .chartOverlay { proxy in
+                GeometryReader { geometry in
+                    Rectangle().fill(.clear).contentShape(Rectangle())
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    let startX = value.location.x
+                                    if let currentXDate: Date = proxy.value(atX: startX) {
+                                        if let closestPoint = data.min(by: { abs($0.date.timeIntervalSince(currentXDate)) < abs($1.date.timeIntervalSince(currentXDate)) }) {
+                                            self.selectedDate = closestPoint.date
+                                            self.selectedHR = closestPoint.value
+                                        }
+                                    }
+                                }
+                                .onEnded { _ in
+                                    withAnimation {
+                                        self.selectedDate = nil
+                                        self.selectedHR = nil
+                                    }
+                                }
+                        )
+                }
+            }
+            .frame(height: 200)
         }
         .padding(.horizontal)
     }
