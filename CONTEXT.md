@@ -4,11 +4,11 @@ This document outlines the high-level architecture, data flow, and key component
 
 ## System Architecture
 
-The system follows a **data streaming architecture**. A low-power wearable device is responsible for raw data acquisition, while a companion iOS application handles all the intensive computation and user-facing logic.
+The system follows a **data streaming architecture**. A low-power wearable device is responsible for raw data acquisition, while a companion iOS application handles all the intensive computation, machine learning inference, and user-facing logic.
 
 The main components are:
-1.  **Wearable Device**: A custom-designed PCB with sensors and firmware. Its only job is to collect and transmit data.
-2.  **iOS Companion App**: A Swift application that connects to the wearable, processes the raw data, runs the machine learning model, and displays the results.
+1.  **Wearable Device**: A custom-designed PCB with sensors (HR + Accelerometer) and an ESP32 microcontroller.
+2.  **iOS Companion App**: A Swift application that processes data in real-time (BLE) or offline (CSV), runs a Core ML model, and visualizes sleep sessions.
 
 ---
 
@@ -16,12 +16,21 @@ The main components are:
 
 The end-to-end process for detecting sleep is as follows:
 
-1.  **Data Acquisition (Wearable)**: The firmware on the wearable's microcontroller continuously reads raw data from the heart rate sensor and the accelerometer.
-2.  **Data Transmission (BLE)**: The raw sensor readings are packaged and transmitted over a Bluetooth Low Energy (BLE) connection.
-3.  **Data Reception (iOS App)**: The app's `BLEManager` class establishes a connection with the wearable and subscribes to the data characteristic, receiving a stream of raw data packets.
-4.  **Feature Engineering (iOS App)**: The raw data is passed to a `DataProcessor` module. This module **re-implements the logic from the Python `preprocess.py` script in Swift**. It calculates the rolling statistics (e.g., mean and standard deviation over 5 and 15-minute windows) and other features to create a feature vector.
-5.  **Inference (iOS App)**: The engineered feature vector is fed into the **Core ML model**.
-6.  **Display (iOS App)**: The model returns a prediction (e.g., 0 for "AWAKE", 1 for "SLEEPING"). The SwiftUI user interface updates to display the current sleep state to the user.
+1.  **Data Acquisition**:
+    * **Live**: The firmware transmits raw sensor data via Bluetooth Low Energy (BLE).
+    * **Offline**: The app imports a CSV simulation file (`.csv`) via the file picker.
+2.  **Feature Engineering (`DataProcessor.swift`)**:
+    * Incoming raw data (HR, Accel X/Y/Z) is stored in a rolling buffer.
+    * The app calculates **11 statistical features** over rolling windows (1 min, 5 min, 15 min).
+    * **Features**: `hr60_mean`, `hr60_std`, `hr5_mean`, `hr5_std`, `hr15_mean`, `hr15_std`, `vm60_mean`, `vm60_std`, `vm5_mean`, `vm15_mean`, `vm15_std`.
+3.  **Inference (`SleepPredictor.swift`)**:
+    * The feature vector (1x11 matrix) is passed to the **Core ML model** (`PulseClassifier`).
+    * The model outputs a class label: `0` (Awake) or `1` (Asleep).
+4.  **Post-Processing ("Smart Session")**:
+    * The app aggregates predictions to identify the "Main Sleep Session".
+    * It filters out short naps and bridges small "wake gaps" (up to 60 mins) to form a continuous sleep block.
+5.  **Visualization (`DashboardView.swift`)**:
+    * The results are displayed on a modern, dark-themed dashboard with interactive charts.
 
 ---
 
@@ -67,11 +76,20 @@ The wearable device is a custom-designed Printed Circuit Board (PCB) engineered 
 
 * **Firmware**: The embedded software responsible for initializing sensors, managing power, and handling BLE communication. It does **not** perform any feature calculation.
 
-### 2. iOS Companion App
-* **BLE Manager**: A Swift class that handles scanning, connecting, and receiving data from the wearable.
-* **Data Processor**: Swift code that transforms the incoming raw data stream into the feature vectors required by the model.
-* **Core ML Model**: The final, tuned XGBoost model, converted from `.joblib` to the `.mlmodel` format using `coremltools`. This allows for efficient on-device inference.
-* **SwiftUI View**: The user interface that displays connection status and the final sleep prediction.
+### 2. iOS Companion App Structure
+
+* **`BLEManager.swift`**: Handles scanning, connecting, and parsing standard BLE characteristics.
+    * *Protocol*: Uses Standard Heart Rate Service (UUID `0x180D`) and Characteristic (UUID `0x2A37`).
+* **`DataProcessor.swift`**: The core logic engine. It manages the data buffers, calculates math features (mean/stdDev), and generates `SleepReport` objects.
+* **`SleepPredictor.swift`**: A wrapper around the `PulseClassifier.mlmodel`. It handles the conversion from Swift arrays to `MLMultiArray`.
+* **`DashboardView.swift`**: The main UI.
+    * *Style*: Dark-first "Deep Night" theme, Glassmorphism cards.
+    * *Charts*: Interactive Swift Charts with scrubbable touch gestures.
+ 
+      
+    <p align="center">
+        <img src="https://i.imgur.com/YtVjlis.png" alt="Pulse_app_preview" height="500"/>
+    </p>
 
 ---
 
@@ -112,9 +130,10 @@ weighted avg       0.94      0.93      0.94      6075
 
 ---
 
-## Key Decisions & Open Questions
+## Current Implementation Status
 
-* **BLE Data Protocol (Undecided)**: The exact format for transmitting data from the wearable to the app has not been finalized. The goal is to choose a simple and efficient format.
-    * **Option A (CSV String)**: Simple to parse (e.g., `"72.5,1.05,0"`). Human-readable for debugging.
-    * **Option B (Raw Bytes)**: Most efficient in terms of size, but requires careful byte-level parsing on the app side.
-* **Model Porting**: The feature engineering pipeline written in Python/pandas **must be perfectly replicated in Swift**. Any discrepancy in the calculation of rolling statistics will lead to poor model performance.
+* **BLE Protocol**: Implemented for Standard Heart Rate (UUID `2A37`).
+* **Model**: Fully integrated via Core ML (`.mlpackage`).
+* **Feature Parity**: Swift implementation of rolling statistics matches the Python training pipeline.
+* **UI/UX**: "App Store Ready" design implemented with SwiftUI Charts and dynamic gradients.
+* **Offline Mode**: CSV Import is fully functional for testing and validation.
